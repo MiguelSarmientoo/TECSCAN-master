@@ -20,7 +20,6 @@ const DocumentFormScreen = ({ navigation }) => {
         value={formData.field1}
         placeholder="Campo 1"
       />
-      {/* Agrega más campos de formulario según sea necesario */}
       <Button title="Guardar" onPress={handleSaveDocument} />
     </View>
   );

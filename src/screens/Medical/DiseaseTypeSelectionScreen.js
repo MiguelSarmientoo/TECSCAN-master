@@ -1,10 +1,16 @@
 import React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DiseaseTypeSelectionScreen = ({ navigation }) => {
-  const handleTypeSelection = (type) => {
-    // Implementa la lógica para guardar el tipo de enfermedad seleccionado
-    navigation.navigate('DocumentForm'); // Navega a la siguiente pantalla
+  const handleTypeSelection = async (type) => {
+    try {
+      // Guarda el tipo de enfermedad seleccionado en AsyncStorage
+      await AsyncStorage.setItem('selectedDiseaseType', type);
+      navigation.navigate('DocumentForm'); // Navega a la siguiente pantalla
+    } catch (error) {
+      console.error('Error al guardar el tipo de enfermedad:', error);
+    }
   };
 
   return (
@@ -12,7 +18,6 @@ const DiseaseTypeSelectionScreen = ({ navigation }) => {
       <Text>Selecciona el tipo de enfermedad:</Text>
       <Button title="Enfermedad A" onPress={() => handleTypeSelection('A')} />
       <Button title="Enfermedad B" onPress={() => handleTypeSelection('B')} />
-      {/* Agrega más botones para otros tipos de enfermedades */}
     </View>
   );
 };
