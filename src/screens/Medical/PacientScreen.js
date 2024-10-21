@@ -4,42 +4,75 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const PacienteScreen = ({ route, navigation }) => {
-  const { paciente, id_cita } = route.params; // Asegúrate de obtener id_cita desde route.params
+  const { paciente, id_cita } = route.params || {};
 
   const navigateToNewReport = () => {
-    navigation.navigate('NewReportScreen', { id_cita }); // Pasar id_cita a NewReportScreen
+    navigation.navigate('NewReportScreen', { id_cita, paciente });
   };
+
+  const navigateToPreviousReports = () => {
+    navigation.navigate('ReportsHistory', { id_cita, paciente });
+  };
+
+  const fechaNacimiento = paciente?.fecha_nacimiento ? new Date(paciente.fecha_nacimiento) : null;
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Home')}>
-          <Icon name="arrow-left" size={30} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.headerText}>Opciones de Paciente</Text>
-      </View>
-      <Text style={styles.patientName}>ID: {id_cita}</Text>
-      <Text style={styles.patientName}>{paciente ? paciente.nombre : 'Nombre del paciente'}</Text>
-      <View style={styles.options}>
+      {paciente && (
+        <View style={styles.patientInfo}>
+          <Text style={styles.patientLabel}>Nombre de paciente:</Text>
+          <Text style={styles.patientName}>{paciente.nombre}</Text>
+          
+          {/* Tabla con más padding */}
+          <View style={styles.table}>
+            <View style={styles.row}>
+              <Text style={styles.label}>Edad:</Text>
+              <Text style={styles.value}>{paciente.edad}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Género:</Text>
+              <Text style={styles.value}>{paciente.genero}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Teléfono:</Text>
+              <Text style={styles.value}>{paciente.telefono || 'No disponible'}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Email:</Text>
+              <Text style={styles.value}>{paciente.email || 'No disponible'}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Dirección:</Text>
+              <Text style={styles.value}>{paciente.direccion || 'No disponible'}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Fecha de Nacimiento:</Text>
+              <Text style={styles.value}>
+                {fechaNacimiento ? fechaNacimiento.toDateString() : 'No disponible'}
+              </Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Estado Civil:</Text>
+              <Text style={styles.value}>{paciente.estado_civil || 'No disponible'}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Ocupación:</Text>
+              <Text style={styles.value}>{paciente.ocupacion || 'No disponible'}</Text>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* Footer con botones más cercanos al contenido */}
+      <View style={styles.footer}>
         <TouchableOpacity style={styles.optionButton} onPress={navigateToNewReport}>
-          <Icon name="file-document-outline" size={30} color="#fff" />
+          <Icon name="file-document-outline" size={25} color="#24A8AF" />
           <Text style={styles.optionText}>Nuevo Reporte</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.optionButton}
-          onPress={() => navigation.navigate('ContactInfo', { paciente, id_cita })}
-        >
-          <Icon name="account-box-outline" size={30} color="#fff" />
-          <Text style={styles.optionText}>Información de Contacto</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.optionButton}
-          onPress={() => navigation.navigate('ReportsHistory', { id_cita})}
-        >
-          <Icon name="history" size={30} color="#fff" />
-          <Text style={styles.optionText}>Historial de Reportes</Text>
+        <TouchableOpacity style={styles.optionButton} onPress={navigateToPreviousReports}>
+          <Icon name="folder-outline" size={25} color="#24A8AF" />
+          <Text style={styles.optionText}>Ver Reportes</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -49,51 +82,67 @@ const PacienteScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0E21',
+    backgroundColor: '#FFFAFA',
+    padding: 10,
   },
-  header: {
-    flexDirection: 'row',
+  patientInfo: {
+    flex: 1,
     alignItems: 'center',
-    backgroundColor: '#1C1C3C',
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    marginVertical: 10,
+    paddingBottom: 20,
   },
-  backButton: {
-    marginRight: 10,
-  },
-  headerText: {
-    fontSize: 24,
-    color: '#fff',
-    fontWeight: 'bold',
+  patientLabel: {
+    fontSize: 18,
+    color: '#1C1C3C',
+    fontWeight: '600',
   },
   patientName: {
-    fontSize: 19,
-    color: '#fff',
+    fontSize: 24,
+    color: '#24A8AF',
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: 20,
-    marginBottom: 10,
+    marginTop: 5,
   },
-  options: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  table: {
+    width: '100%',
+    marginTop: 10,
+    paddingHorizontal: 15, // Reducido para dar más espacio en los bordes
+    paddingVertical: 10, // Añadido para espaciar los elementos
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 10, // Incrementado para más separación entre filas
+    borderBottomWidth: 1,
+    borderColor: '#EAEAEA',
+  },
+  label: {
+    fontSize: 16,
+    color: '#24A8AF', // Color de las etiquetas
+    fontWeight: 'bold',
+  },
+  value: {
+    fontSize: 16,
+    color: '#333', // Color oscuro para los valores
+  },
+  footer: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 10,
   },
   optionButton: {
-    backgroundColor: '#1C1C3C',
-    padding: 20,
-    borderRadius: 10,
-    width: 150,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 10,
+    borderWidth: 1,
+    borderColor: '#24A8AF',
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
   },
   optionText: {
-    color: '#fff',
+    color: '#24A8AF',
     fontSize: 16,
-    marginTop: 5,
+    marginLeft: 5,
     textAlign: 'center',
   },
 });

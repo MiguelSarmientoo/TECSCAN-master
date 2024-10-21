@@ -1,50 +1,28 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Animated, Dimensions, Alert } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { Picker } from '@react-native-picker/picker';
 
-const { width } = Dimensions.get('window');
-
-const NewReportScreen = ({ navigation, route }) => {
+const NewReportScreen = ({ navigation }) => {
   const [formData, setFormData] = useState({
-    nivel_salud: '',
-    comentarios: '',
-    presion_arterial_sistolica: '',
-    presion_arterial_diastolica: '',
-    frecuencia_cardiaca: '',
-    frecuencia_respiratoria: '',
-    peso: '',
-    altura: '',
-    imc: '',
-    diagnostico: '',
-    tratamiento: '',
-    nivel_dolor: '',
-    alergias: '',
+    motivo_consulta: '',
+    tratamiento_previo: '',
     medicamentos_actuales: '',
+    condiciones_medicas: '',
+    estado_emocional: '',
+    sintomas_emocionales: '',
+    nivel_estres: '',
+    relacion_familiar: '',
+    red_apoyo: '',
+    situacion_laboral: '',
+    actividad_fisica: '',
+    patrones_sueno: '',
+    alimentacion: '',
+    objetivos_terapia: '',
+    cambios_deseados: '',
+    habilidades_deseadas: '',
+    comentarios: '',
   });
-
-  const { id_cita, pacienteData } = route.params;
-  console.log('ID Cita recibido:', route.params.id_cita); // Agregado para verificar el id_cita recibido
-
-  const fields = [
-    { key: 'nivel_salud', label: 'Nivel de Salud', placeholder: 'Seleccione el nivel de salud', icon: 'heart-pulse' },
-    { key: 'comentarios', label: 'Comentarios', placeholder: 'Ingrese comentarios', icon: 'comment' },
-    { key: 'presion_arterial_sistolica', label: 'Presión Arterial Sistólica', placeholder: 'Ingrese presión arterial sistólica', icon: 'blood-bag' },
-    { key: 'presion_arterial_diastolica', label: 'Presión Arterial Diastólica', placeholder: 'Ingrese presión arterial diastólica', icon: 'blood-bag' },
-    { key: 'frecuencia_cardiaca', label: 'Frecuencia Cardíaca', placeholder: 'Ingrese frecuencia cardíaca', icon: 'heart' },
-    { key: 'frecuencia_respiratoria', label: 'Frecuencia Respiratoria', placeholder: 'Ingrese frecuencia respiratoria', icon: 'lungs' },
-    { key: 'peso', label: 'Peso (kg)', placeholder: 'Ingrese el peso en kilogramos', icon: 'weight' },
-    { key: 'altura', label: 'Altura (cm)', placeholder: 'Ingrese la altura en centímetros', icon: 'human-male-height' },
-    { key: 'imc', label: 'IMC', placeholder: 'Ingrese el IMC', icon: 'calculator' },
-    { key: 'diagnostico', label: 'Diagnóstico', placeholder: 'Ingrese el diagnóstico', icon: 'stethoscope' },
-    { key: 'tratamiento', label: 'Tratamiento', placeholder: 'Ingrese el tratamiento', icon: 'pill' },
-    { key: 'nivel_dolor', label: 'Nivel de Dolor', placeholder: 'Seleccione el nivel de dolor', icon: 'thermometer' },
-    { key: 'alergias', label: 'Alergias', placeholder: 'Ingrese alergias', icon: 'alert-circle' },
-    { key: 'medicamentos_actuales', label: 'Medicamentos Actuales', placeholder: 'Ingrese medicamentos actuales', icon: 'pill' },
-  ];
-
-  const scrollX = useRef(new Animated.Value(0)).current;
 
   const handleInputChange = (key, value) => {
     setFormData({
@@ -53,146 +31,204 @@ const NewReportScreen = ({ navigation, route }) => {
     });
   };
 
-  const handlePickerChange = (itemValue, key) => {
-    setFormData({
-      ...formData,
-      [key]: itemValue,
-    });
-  };
-
   const handleSubmit = () => {
     try {
-      console.log('Datos del formulario:', formData); // Agregado para mostrar los datos del formulario
-      navigation.navigate('PreviewScreen', { idCita: id_cita, formData: formData });
+      console.log('Datos del formulario:', formData);
+      navigation.navigate('Preview', { formData });
     } catch (error) {
       console.error('Error al procesar el formulario:', error);
       Alert.alert('Error', 'No se pudo procesar el formulario');
     }
   };
 
-  const renderPickerItem = (label, key, values) => (
-    <View style={styles.pickerContainer}>
-      <Text style={styles.pickerLabel}>{label}</Text>
-      <TouchableOpacity
-        style={styles.pickerTouchable}
-        onPress={() => {}}
-      >
-        <Text style={styles.pickerPlaceholder}>{formData[key] ? formData[key] : fields.find(field => field.key === key)?.placeholder}</Text>
-      </TouchableOpacity>
-      {key === 'nivel_salud' && (
-        <Picker
-          selectedValue={formData[key]}
-          onValueChange={(itemValue) => handlePickerChange(itemValue, key)}
-          style={styles.picker}
-        >
-          {values.map((value, index) => (
-            <Picker.Item key={index.toString()} label={value} value={value} color="#fff" />
-          ))}
-        </Picker>
-      )}
-      {key === 'nivel_dolor' && (
-        <Picker
-          selectedValue={formData[key]}
-          onValueChange={(itemValue) => handlePickerChange(itemValue, key)}
-          style={styles.picker}
-        >
-          {values.map((value, index) => (
-            <Picker.Item key={index.toString()} label={value} value={value} color="#fff" />
-          ))}
-        </Picker>
-      )}
-    </View>
-  );
-
-  const renderTextBox = (label, key, placeholder, icon, keyboardType = 'default') => (
-    <View style={styles.inputGroup}>
-      <Icon name={icon} size={24} color="#4C9EEB" style={styles.inputIcon} />
-      <TextInput
-        style={styles.input}
-        placeholder={placeholder}
-        placeholderTextColor="#888"
-        value={formData[key]}
-        keyboardType={keyboardType}
-        onChangeText={(text) => handleInputChange(key, text)}
-      />
-    </View>
-  );
-
-  const renderFormItems = () => {
-    return fields.map((item, index) => (
-      <View key={index.toString()} style={styles.slide}>
-        <View style={styles.formGroup}>
-          {item.key === 'nivel_salud' ? (
-            renderPickerItem(item.label, item.key, ['Malo', 'Bueno'])
-          ) : item.key === 'nivel_dolor' ? (
-            renderPickerItem(item.label, item.key, ['Bajo', 'Alto'])
-          ) : item.key === 'altura' || item.key === 'imc' || item.key === 'peso' || item.key === 'presion_arterial_sistolica' || item.key === 'presion_arterial_diastolica' || item.key === 'frecuencia_cardiaca' || item.key === 'frecuencia_respiratoria' ? (
-            renderTextBox(item.label, item.key, item.placeholder, item.icon, 'numeric')
-          ) : (
-            renderTextBox(item.label, item.key, item.placeholder, item.icon)
-          )}
-        </View>
+  const renderTextBox = (label, key, placeholder, icon) => (
+    <View style={styles.card}>
+      <Text style={styles.cardTitle}>{label}</Text>
+      <View style={styles.inputGroup}>
+        <Icon name={icon} size={24} color="#4A90E2" style={styles.inputIcon} />
+        <TextInput
+          style={styles.input}
+          placeholder={placeholder}
+          placeholderTextColor="#888"
+          value={formData[key]}
+          onChangeText={(text) => handleInputChange(key, text)}
+          multiline={true}
+          numberOfLines={2}
+        />
       </View>
-    ));
+      {renderQuickResponses(key)}
+    </View>
+  );
+
+  const renderPicker = (label, key, icon, options) => (
+    <View style={styles.card}>
+      <Text style={styles.cardTitle}>{label}</Text>
+      <View style={styles.inputGroup}>
+        <Icon name={icon} size={24} color="#4A90E2" style={styles.inputIcon} />
+        <Picker
+          selectedValue={formData[key]}
+          style={styles.picker}
+          onValueChange={(itemValue) => handleInputChange(key, itemValue)}
+        >
+          <Picker.Item label="Seleccione una opción" value="" />
+          {options.map((option, index) => (
+            <Picker.Item key={index} label={option} value={option} />
+          ))}
+        </Picker>
+      </View>
+      {renderQuickResponses(key)}
+    </View>
+  );
+
+  const renderQuickResponses = (key) => {
+    const responses = {
+      motivo_consulta: [
+        'Siento una constante ansiedad ante situaciones cotidianas.',
+        'He tenido episodios frecuentes de tristeza que duran varios días.',
+        'Me cuesta concentrarme en mi trabajo y me siento desmotivado/a.',
+      ],
+      tratamiento_previo: [
+        'He recibido terapia psicológica anteriormente durante varios meses.',
+        'Actualmente estoy en tratamiento psiquiátrico y tomando medicación.',
+        'No he recibido tratamientos previos para problemas emocionales.',
+      ],
+      medicamentos_actuales: [
+        'Estoy tomando antidepresivos bajo prescripción médica.',
+        'Actualmente no tomo medicación, pero lo he hecho anteriormente.',
+        'No estoy tomando ningún tipo de medicamento actualmente.',
+      ],
+      condiciones_medicas: [
+        'Tengo una condición médica crónica que afecta mi bienestar mental.',
+        'Estoy en tratamiento por hipertensión y lo manejo con medicamentos.',
+        'No tengo ninguna condición médica relevante actualmente.',
+      ],
+      estado_emocional: [
+        'Me siento emocionalmente inestable, con cambios de humor frecuentes.',
+        'Mi estado emocional es mayormente estable, pero con episodios de ansiedad.',
+        'Me siento en equilibrio emocional la mayor parte del tiempo.',
+      ],
+      sintomas_emocionales: [
+        'Tengo problemas para dormir y me despierto con frecuencia durante la noche.',
+        'Siento una constante irritabilidad que afecta mis relaciones personales.',
+        'He notado una baja energía y falta de motivación en mi día a día.',
+      ],
+      relacion_familiar: [
+        'Tengo una relación distante con mi familia, y la comunicación es limitada.',
+        'Mi relación familiar es buena, aunque con algunas tensiones ocasionales.',
+        'Disfruto de una relación cercana y de apoyo con mi familia.',
+      ],
+      red_apoyo: [
+        'Cuento con una red de apoyo sólida, principalmente amigos y colegas.',
+        'Mi red de apoyo es limitada, pero tengo a algunas personas cercanas.',
+        'No tengo una red de apoyo significativa en este momento.',
+      ],
+      situacion_laboral: [
+        'Estoy desempleado/a actualmente y eso ha incrementado mi ansiedad.',
+        'Tengo un empleo, pero la incertidumbre me genera estrés constante.',
+        'Mi situación laboral es estable y me siento satisfecho/a en mi trabajo.',
+      ],
+      actividad_fisica: [
+        'Hago actividad física regularmente, al menos tres veces por semana.',
+        'Realizo actividad física esporádicamente, sin una rutina fija.',
+        'No realizo ninguna actividad física en mi día a día.',
+      ],
+      patrones_sueno: [
+        'Duermo menos de 5 horas por noche y me despierto con frecuencia.',
+        'Mis patrones de sueño son irregulares, aunque duermo suficiente algunas noches.',
+        'Tengo un patrón de sueño estable, con al menos 7 horas de descanso.',
+      ],
+      alimentacion: [
+        'Llevo una dieta equilibrada y trato de mantener una alimentación saludable.',
+        'Mi alimentación es irregular y suele incluir comidas rápidas y no saludables.',
+        'No presto mucha atención a mi alimentación, y es bastante desordenada.',
+      ],
+      objetivos_terapia: [
+        'Quiero trabajar en reducir mis niveles de ansiedad y mejorar mi bienestar.',
+        'Mi objetivo es desarrollar habilidades para manejar el estrés diario.',
+        'Busco explorar áreas de mi vida donde pueda mejorar mi autoestima.',
+      ],
+      cambios_deseados: [
+        'Deseo ser más asertivo/a en mis relaciones personales y laborales.',
+        'Quiero reducir mi ansiedad y aprender a manejar mis emociones.',
+        'Me gustaría sentir más motivación y energía en mi vida cotidiana.',
+      ],
+      habilidades_deseadas: [
+        'Quiero aprender a gestionar mejor mis emociones en situaciones de estrés.',
+        'Me gustaría mejorar mi capacidad de comunicación con los demás.',
+        'Deseo trabajar en fortalecer mi autoestima y confianza en mí mismo/a.',
+      ],
+      comentarios: [
+        'Estoy dispuesto/a a trabajar en los cambios necesarios para mejorar.',
+        'Agradezco el espacio para expresar mis inquietudes y recibir ayuda.',
+        'Espero seguir avanzando en este proceso terapéutico de autoconocimiento.',
+      ],
+    };
+
+    return (
+      <View style={styles.quickResponsesContainer}>
+        {responses[key] && responses[key].map((response, index) => (
+          <TouchableOpacity
+            key={index}
+            style={styles.quickResponseButton}
+            onPress={() => handleInputChange(key, response)}
+          >
+            <Text style={styles.quickResponseText}>{response}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Icon name="arrow-left" size={30} color="#fff" />
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {renderTextBox('Motivo de Consulta', 'motivo_consulta', 'Ingrese motivo de consulta', 'comment')}
+        {renderTextBox('Tratamientos Previos', 'tratamiento_previo', 'Ingrese tratamientos previos', 'pill')}
+        {renderTextBox('Medicamentos Actuales', 'medicamentos_actuales', 'Ingrese medicamentos actuales', 'pill')}
+        {renderTextBox('Condiciones Médicas', 'condiciones_medicas', 'Ingrese condiciones médicas', 'heart')}
+        {renderTextBox('Estado Emocional', 'estado_emocional', 'Ingrese estado emocional', 'emoticon-happy')}
+        {renderTextBox('Síntomas Emocionales', 'sintomas_emocionales', 'Ingrese síntomas emocionales', 'emoticon-sad')}
+        {renderPicker('Nivel de Estrés', 'nivel_estres', 'alert', ['Bajo', 'Moderado', 'Alto', 'Crítico'])}
+        {renderTextBox('Relación Familiar', 'relacion_familiar', 'Ingrese relación familiar', 'account-group')}
+        {renderTextBox('Red de Apoyo', 'red_apoyo', 'Ingrese red de apoyo', 'account-group')}
+        {renderTextBox('Situación Laboral', 'situacion_laboral', 'Ingrese situación laboral', 'briefcase')}
+        {renderTextBox('Actividad Física', 'actividad_fisica', 'Ingrese actividad física', 'run')}
+        {renderTextBox('Patrones de Sueño', 'patrones_sueno', 'Ingrese patrones de sueño', 'bed')}
+        {renderTextBox('Alimentación', 'alimentacion', 'Ingrese alimentación', 'food')}
+        {renderTextBox('Objetivos de Terapia', 'objetivos_terapia', 'Ingrese objetivos de terapia', 'target')}
+        {renderTextBox('Cambios Deseados', 'cambios_deseados', 'Ingrese cambios deseados', 'update')}
+        {renderTextBox('Habilidades Deseadas', 'habilidades_deseadas', 'Ingrese habilidades deseadas', 'lightbulb')}
+        {renderTextBox('Comentarios', 'comentarios', 'Ingrese comentarios', 'comment')}
+
+        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+          <Text style={styles.submitButtonText}>Siguiente</Text>
         </TouchableOpacity>
-        <Text style={styles.headerText}>Nuevo Reporte</Text>
-      </View>
-      <Animated.ScrollView
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-          { useNativeDriver: false }
-        )}
-        scrollEventThrottle={16}
-      >
-        {renderFormItems()}
-      </Animated.ScrollView>
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-        <Text style={styles.submitButtonText}>Enviar</Text>
-      </TouchableOpacity>
-    </SafeAreaView>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0E21',
+    backgroundColor: '#F0F7F8', // Fondo más suave y claro
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1C1C3C',
-    paddingVertical: 15,
-    paddingHorizontal: 20,
+  scrollContainer: {
+    padding: 15,
+    paddingBottom: 20,
   },
-  backButton: {
-    marginRight: 10,
+  card: {
+    backgroundColor: '#E4F5F6', // Color de fondo más claro que el principal para las tarjetas
+    borderRadius: 12,
+    padding: 15,
+    marginVertical: 10,
+    elevation: 3,
   },
-  headerText: {
-    fontSize: 24,
-    color: '#fff',
+  cardTitle: {
+    color: '#208F94', // Versión más oscura del color principal para títulos
+    fontSize: 17,
     fontWeight: 'bold',
-    flex: 1,
-    textAlign: 'center',
-  },
-  slide: {
-    width,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  formGroup: {
-    marginBottom: 20,
+    marginBottom: 10,
   },
   inputGroup: {
     flexDirection: 'row',
@@ -200,47 +236,47 @@ const styles = StyleSheet.create({
   },
   inputIcon: {
     marginRight: 10,
+    color: '#24A8AF', // Color principal para los íconos
   },
   input: {
-    backgroundColor: '#1C1C3C',
-    color: '#fff',
-    paddingHorizontal: 15,
+    backgroundColor: '#fff',
+    color: '#333',
+    paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#4C9EEB',
-    width: 260,
-  },
-  pickerContainer: {
-    backgroundColor: '#1C1C3C',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#4C9EEB',
-    marginBottom: 20,
-  },
-  pickerLabel: {
-    color: '#4C9EEB',
-    fontSize: 18,
-    paddingHorizontal: 15,
-    paddingTop: 10,
-  },
-  pickerTouchable: {
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-  },
-  pickerPlaceholder: {
-    color: '#fff',
-    fontSize: 18,
+    borderColor: '#208F94', // Color de borde coherente con los títulos
+    flex: 1,
   },
   picker: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#208F94', // Borde acorde al esquema de colores
+  },
+  quickResponsesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 10,
+  },
+  quickResponseButton: {
+    backgroundColor: '#24A8AF', // Color principal para los botones de respuesta rápida
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    margin: 5,
+  },
+  quickResponseText: {
     color: '#fff',
+    fontSize: 15,
   },
   submitButton: {
-    backgroundColor: '#4C9EEB',
+    backgroundColor: '#208F94', 
     borderRadius: 10,
-    paddingVertical: 15,
+    paddingVertical: 16,
     alignItems: 'center',
-    margin: 20,
+    marginVertical: 20,
   },
   submitButtonText: {
     color: '#fff',
@@ -248,5 +284,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
 
 export default NewReportScreen;

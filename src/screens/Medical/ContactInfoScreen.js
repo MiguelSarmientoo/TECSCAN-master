@@ -10,7 +10,7 @@ const ContactInfoScreen = ({ route, navigation }) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Icon name="arrow-left" size={30} color="#fff" />
+          <Icon name="arrow-left" size={30} color="#4C9EEB" />
         </TouchableOpacity>
         <Text style={styles.headerText}>Información de Contacto</Text>
       </View>
@@ -24,12 +24,54 @@ const ContactInfoScreen = ({ route, navigation }) => {
           <Text style={styles.value}>{paciente.edad}</Text>
         </View>
         <View style={styles.infoBox}>
-          <Text style={styles.label}>Contacto:</Text>
-          <Text style={styles.value}>{paciente.telefono}</Text>
+          <Text style={styles.label}>Género:</Text>
+          <Text style={styles.value}>{paciente.genero}</Text>
+        </View>
+        <View style={styles.infoBox}>
+          <Text style={styles.label}>Teléfono:</Text>
+          <Text style={styles.value}>{paciente.telefono || 'No disponible'}</Text>
+        </View>
+        <View style={styles.infoBox}>
+          <Text style={styles.label}>Email:</Text>
+          <Text style={styles.value}>{paciente.email || 'No disponible'}</Text>
+        </View>
+        <View style={styles.infoBox}>
+          <Text style={styles.label}>Dirección:</Text>
+          <Text style={styles.value}>{paciente.direccion || 'No disponible'}</Text>
+        </View>
+        <View style={styles.infoBox}>
+          <Text style={styles.label}>Fecha de Nacimiento:</Text>
+          <Text style={styles.value}>
+            {paciente.fecha_nacimiento ? new Date(paciente.fecha_nacimiento).toDateString() : 'No disponible'}
+          </Text>
+        </View>
+        <View style={styles.infoBox}>
+          <Text style={styles.label}>Estado Civil:</Text>
+          <Text style={styles.value}>{paciente.estado_civil || 'No disponible'}</Text>
+        </View>
+        <View style={styles.infoBox}>
+          <Text style={styles.label}>Ocupación:</Text>
+          <Text style={styles.value}>{paciente.ocupacion || 'No disponible'}</Text>
+        </View>
+        <View style={styles.infoBox}>
+          <Text style={styles.label}>Antecedentes Médicos:</Text>
+          <Text style={styles.value}>{paciente.antecedentes_medicos || 'No disponible'}</Text>
+        </View>
+        <View style={styles.infoBox}>
+          <Text style={styles.label}>Alergias:</Text>
+          <Text style={styles.value}>{paciente.alergias || 'No disponible'}</Text>
+        </View>
+        <View style={styles.infoBox}>
+          <Text style={styles.label}>Grupo Sanguíneo:</Text>
+          <Text style={styles.value}>{paciente.grupo_sanguineo || 'No disponible'}</Text>
+        </View>
+        <View style={styles.infoBox}>
+          <Text style={styles.label}>Notas Adicionales:</Text>
+          <Text style={styles.value}>{paciente.notas_adicionales || 'No disponible'}</Text>
         </View>
         <View style={styles.infoBox}>
           <Text style={styles.label}>ID de Identificación:</Text>
-          <Text style={styles.value}>{paciente.numero_identificacion}</Text>
+          <Text style={styles.value}>{paciente.dni || 'No disponible'}</Text>
         </View>
       </View>
     </SafeAreaView>
@@ -39,37 +81,37 @@ const ContactInfoScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0E21',
+    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1C1C3C',
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-    marginBottom: 20,
+    backgroundColor: '#F5F5F5',
+    paddingVertical: 15,
     paddingHorizontal: 20,
+    elevation: 2,
+    paddingTop: 50,
   },
   backButton: {
     marginRight: 10,
   },
   headerText: {
     fontSize: 24,
-    color: '#fff',
+    color: '#4C9EEB',
     fontWeight: 'bold',
+    flex: 1,
+    textAlign: 'center',
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     paddingHorizontal: 20,
   },
   infoBox: {
-    backgroundColor: '#1C1C3C',
+    backgroundColor: '#F8F8F8',
     padding: 15,
     borderRadius: 10,
     marginVertical: 10,
-    width: '100%',
+    elevation: 1,
   },
   label: {
     fontSize: 16,
@@ -78,7 +120,7 @@ const styles = StyleSheet.create({
   },
   value: {
     fontSize: 18,
-    color: '#fff',
+    color: '#333',
     marginTop: 5,
   },
 });

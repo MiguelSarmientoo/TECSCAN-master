@@ -1,97 +1,158 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import config from '../../config/config'; // Asegúrate de que esta ruta sea correcta
 
 const PreviewScreen = ({ route, navigation }) => {
-    const { formData, idCita } = route.params; // Recibe idCita y formData desde route.params
-  
+    const { formData } = route.params;
+
     const handleSaveData = async () => {
-      try {
-        const response = await fetch('https://c342-190-232-119-12.ngrok-free.app/encuestas', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            id_cita: idCita, // Id de la cita del paciente
-            nivel_salud: formData.nivel_salud,
-            comentarios: formData.comentarios,
-            presion_arterial_sistolica: formData.presion_arterial_sistolica,
-            presion_arterial_diastolica: formData.presion_arterial_diastolica,
-            frecuencia_cardiaca: formData.frecuencia_cardiaca,
-            frecuencia_respiratoria: formData.frecuencia_respiratoria,
-            peso: formData.peso,
-            altura: formData.altura,
-            imc: formData.imc,
-            diagnostico: formData.diagnostico,
-            tratamiento: formData.tratamiento,
-            nivel_dolor: formData.nivel_dolor,
-            alergias: formData.alergias,
-            medicamentos_actuales: formData.medicamentos_actuales,
-          }),
-        });
-  
-        if (!response.ok) {
-          throw new Error('Error al guardar los datos');
+        try {
+            const response = await fetch(`${config.API_URL}/encuestas/crearencuesta`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    cita_id: 1,
+                    motivo_consulta: formData.motivo_consulta || null,
+                    tratamiento_previo: formData.tratamiento_previo || null,
+                    medicamentos_actuales: formData.medicamentos_actuales || null,
+                    condiciones_medicas: formData.condiciones_medicas || null,
+                    estado_emocional: formData.estado_emocional || null,
+                    sintomas_emocionales: formData.sintomas_emocionales || null,
+                    nivel_estres: formData.nivel_estres || null,
+                    relacion_familiar: formData.relacion_familiar || null,
+                    red_apoyo: formData.red_apoyo || null,
+                    situacion_laboral: formData.situacion_laboral || null,
+                    actividad_fisica: formData.actividad_fisica || null,
+                    patrones_sueno: formData.patrones_sueno || null,
+                    alimentacion: formData.alimentacion || null,
+                    objetivos_terapia: formData.objetivos_terapia || null,
+                    cambios_deseados: formData.cambios_deseados || null,
+                    habilidades_deseadas: formData.habilidades_deseadas || null,
+                    comentarios: formData.comentarios || null,
+                }),
+            });
+    
+            if (!response.ok) {
+                throw new Error('Error al guardar los datos en la encuesta');
+            }
+    
+            // Ahora generamos el PDF después de guardar la encuesta
+            const pdfResponse = await fetch(`${config.API_URL}/encuestas/generate-pdf/1`, {
+                method: 'POST',
+            });
+    
+            if (!pdfResponse.ok) {
+                throw new Error('Error al generar el PDF');
+            }
+    
+            // Si todo sale bien, mostramos una alerta y volvemos a la pantalla principal
+            Alert.alert('Datos guardados y PDF generado correctamente', '', [
+                {
+                    text: 'OK',
+                    onPress: () => navigation.navigate('Home', { paciente: route.params.paciente, formData }),
+                },
+            ]);
+        } catch (error) {
+            console.error('Error al guardar los datos o generar el PDF:', error);
+            Alert.alert('Error', error.message);
         }
-  
-        Alert.alert('Datos guardados correctamente');
-        // Puedes agregar lógica adicional después de guardar los datos, como navegar a otra pantalla o actualizar el estado.
-      } catch (error) {
-        console.error('Error al guardar los datos:', error);
-        Alert.alert('Error', 'No se pudieron guardar los datos');
-      }
+    };    
+
+    const renderLabel = (key) => {
+        const labels = {
+            motivo_consulta: 'Motivo de Consulta',
+            tratamiento_previo: 'Tratamiento Previo',
+            medicamentos_actuales: 'Medicamentos Actuales',
+            condiciones_medicas: 'Condiciones Médicas',
+            estado_emocional: 'Estado Emocional',
+            sintomas_emocionales: 'Síntomas Emocionales',
+            nivel_estres: 'Nivel de Estrés',
+            relacion_familiar: 'Relación Familiar',
+            red_apoyo: 'Red de Apoyo',
+            situacion_laboral: 'Situación Laboral',
+            actividad_fisica: 'Actividad Física',
+            patrones_sueno: 'Patrones de Sueño',
+            alimentacion: 'Alimentación',
+            objetivos_terapia: 'Objetivos de Terapia',
+            cambios_deseados: 'Cambios Deseados',
+            habilidades_deseadas: 'Habilidades Deseadas',
+            comentarios: 'Comentarios',
+        };
+        return labels[key] || key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
     };
-  
+
     return (
-      <SafeAreaView style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-          {Object.keys(formData).map((key, index) => (
-            <View key={index} style={styles.itemContainer}>
-              <Text style={styles.label}>{key}</Text>
-              <Text style={styles.value}>{formData[key]}</Text>
-            </View>
-          ))}
-          <TouchableOpacity style={styles.saveButton} onPress={handleSaveData}>
-            <Text style={styles.buttonText}>Guardar Datos de Encuesta</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </SafeAreaView>
+        <SafeAreaView style={styles.container}>
+            <ScrollView contentContainerStyle={styles.scrollContainer}>
+                <Text style={styles.subtitle}>Revise la información antes de guardar</Text>
+                {Object.keys(formData).map((key, index) => (
+                    <View key={index} style={styles.itemContainer}>
+                        <Text style={styles.label}>{renderLabel(key)}</Text>
+                        <Text style={styles.value}>{formData[key]}</Text>
+                    </View>
+                ))}
+                <TouchableOpacity style={styles.saveButton} onPress={handleSaveData}>
+                    <Text style={styles.buttonText}>Guardar Datos de Encuesta</Text>
+                </TouchableOpacity>
+            </ScrollView>
+        </SafeAreaView>
     );
-  };
-  
+};
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#0A0E21',
+        backgroundColor: '#E9F7F9', // Color de fondo claro
     },
     scrollContainer: {
         flexGrow: 1,
         paddingHorizontal: 20,
         paddingVertical: 10,
     },
-    itemContainer: {
+    subtitle: {
+        fontSize: 20,
+        color: '#333',
         marginBottom: 20,
+        fontWeight: 'bold',
+        textAlign: 'center',
+    },
+    itemContainer: {
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        padding: 15,
+        marginBottom: 15,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 1.5,
+        elevation: 2,
     },
     label: {
-        fontSize: 18,
-        color: '#4C9EEB',
+        fontSize: 16,
+        color: '#24A8AF', // Color principal
         marginBottom: 5,
     },
     value: {
-        fontSize: 20,
-        color: '#fff',
+        fontSize: 18,
+        color: '#333',
     },
     saveButton: {
-        backgroundColor: '#1C1C3C',
+        borderColor: '#24A8AF', // Color del borde
+        borderWidth: 2,
         borderRadius: 10,
         paddingVertical: 15,
         alignItems: 'center',
         marginTop: 20,
+        backgroundColor: 'transparent', // Sin fondo para que se vea el borde
     },
     buttonText: {
-        color: '#fff',
+        color: '#24A8AF', // Color del texto
         fontSize: 18,
         fontWeight: 'bold',
     },

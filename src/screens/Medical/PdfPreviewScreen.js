@@ -1,43 +1,66 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import { WebView } from 'react-native-webview';
-import * as Print from 'expo-print';
 import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
+import * as MediaLibrary from 'expo-media-library';
+import config from '../../config/config'; // Asegúrate de que esta ruta sea correcta
 
-const PdfPreviewScreen = ({ route }) => {
-  const { htmlContent, report } = route.params;
-  const navigation = useNavigation();
+const PdfPreviewScreen = ({ route, navigation }) => {
+  const { id_cita } = route.params;
+  const [loading, setLoading] = useState(false);
 
-  const printPDF = async () => {
-    try {
-      await Print.printAsync({ html: htmlContent });
-    } catch (error) {
-      Alert.alert('Error', `Could not print file: ${error.message}`);
+  const downloadPdf = async () => {
+    setLoading(true);
+
+    // Paso 1: Solicitar permisos para acceder a la biblioteca de medios
+    const { status } = await MediaLibrary.requestPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Error', 'Permiso denegado para acceder a la biblioteca de medios.');
+      setLoading(false);
+      return;
     }
-  };
 
-  const savePDF = async () => {
     try {
-      const pdf = await Print.printToFileAsync({ html: htmlContent });
-      await saveReportFile(pdf.uri);
-    } catch (error) {
-      Alert.alert('Error', `Could not save file: ${error.message}`);
-    }
-  };
+      // Paso 2: Hacer la solicitud para generar el PDF
+      const response = await fetch(`${config.API_URL}/encuestas/generate-pdf`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id_cita }),
+      });
 
-  const saveReportFile = async (uri) => {
-    try {
-      if (Platform.OS === 'android') {
-        const fileUri = await FileSystem.copyAsync({ from: uri, to: `${FileSystem.documentDirectory}Report_${report.createdAt.replace(/\//g, '-')}.pdf` });
-        Alert.alert('Success', 'File Saved');
+      if (!response.ok) {
+        throw new Error('Error al generar el PDF');
+      }
+
+      // Paso 3: Descargar el PDF
+      const uri = `${config.API_URL}/pdf/reporte_${id_cita}.pdf`;
+      const localFile = `${FileSystem.documentDirectory}reporte_${id_cita}.pdf`;
+      const downloadResponse = await FileSystem.downloadAsync(uri, localFile);
+
+      if (downloadResponse.status !== 200) {
+        throw new Error('No se pudo descargar el PDF.');
+      }
+
+      // Paso 4: Verificar si el archivo existe
+      const fileInfo = await FileSystem.getInfoAsync(localFile);
+      if (!fileInfo.exists) {
+        throw new Error('El archivo no existe.');
+      }
+
+      // Paso 5: Guardar el archivo en la biblioteca de medios
+      const asset = await MediaLibrary.createAssetAsync(fileInfo.uri);
+      if (asset) {
+        Alert.alert('Éxito', 'PDF descargado y guardado en la biblioteca.');
       } else {
-        await Sharing.shareAsync(uri);
+        throw new Error('No se pudo crear el activo en la biblioteca.');
       }
     } catch (error) {
-      Alert.alert('Error', `Could not save file: ${error.message}`);
+      console.error(error);
+      Alert.alert('Error', error.message || 'No se pudo cargar el PDF.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -47,65 +70,30 @@ const PdfPreviewScreen = ({ route }) => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.backButton}>Back</Text>
         </TouchableOpacity>
-        <Text style={styles.headerText}>PDF Preview</Text>
+        <Text style={styles.headerText}>Descargar PDF</Text>
       </View>
-      <WebView
-        originWhitelist={['*']}
-        source={{ html: htmlContent }} // Asegúrate de que htmlContent sea el HTML completo
-        style={styles.webview}
-      />
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.actionButton} onPress={printPDF}>
-          <Text style={styles.buttonText}>Print PDF</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton} onPress={savePDF}>
-          <Text style={styles.buttonText}>Save PDF</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity style={styles.downloadButton} onPress={downloadPdf}>
+        <Text style={styles.buttonText}>Descargar PDF</Text>
+      </TouchableOpacity>
+      {loading && <ActivityIndicator size="large" color="#4C9EEB" style={styles.loadingIndicator} />}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0A0E21',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1C1C3C',
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-  },
-  backButton: {
-    color: '#4C9EEB',
-    fontSize: 18,
-    marginRight: 20,
-  },
-  headerText: {
-    fontSize: 24,
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  webview: {
-    flex: 1,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: 20,
-  },
-  actionButton: {
+  container: { flex: 1 },
+  header: { padding: 16, flexDirection: 'row', alignItems: 'center' },
+  backButton: { marginRight: 16, color: '#4C9EEB' },
+  headerText: { fontSize: 20, fontWeight: 'bold' },
+  loadingIndicator: { marginTop: 20 },
+  downloadButton: {
+    padding: 10,
     backgroundColor: '#4C9EEB',
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderRadius: 10,
+    borderRadius: 5,
+    margin: 16,
+    alignItems: 'center',
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
+  buttonText: { color: '#fff' },
 });
 
 export default PdfPreviewScreen;

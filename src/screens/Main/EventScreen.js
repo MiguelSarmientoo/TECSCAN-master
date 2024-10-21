@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { useRoute } from '@react-navigation/native'; // Importar para obtener el parámetro
+import config from '../../config/config'; // Asegúrate de que la ruta sea correcta
 
 const EventScreen = () => {
   const [citas, setCitas] = useState([]);
+  const route = useRoute(); // Obtener la información de la ruta
+  const { selectedDate } = route.params; // Obtener el día seleccionado desde HomeScreen
 
   useEffect(() => {
     fetchCitas();
@@ -10,16 +14,22 @@ const EventScreen = () => {
 
   const fetchCitas = async () => {
     try {
-      const response = await fetch('https://c342-190-232-119-12.ngrok-free.app/citas');
+      const response = await fetch(`${config.API_URL}/citas`); // Utiliza la URL centralizada
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
       const citasData = await response.json();
-      // Iterar por cada cita para obtener el nombre del paciente
+      
+      // Filtrar las citas por la fecha seleccionada
+      const citasForSelectedDate = citasData.filter(cita => {
+        const citaDate = new Date(cita.fecha).toISOString().split('T')[0];
+        return citaDate === selectedDate;
+      });
+
       const citasWithPacientes = await Promise.all(
-        citasData.map(async (cita) => {
+        citasForSelectedDate.map(async (cita) => {
           try {
-            const pacienteResponse = await fetch(`https://c342-190-232-119-12.ngrok-free.app/pacientes/${cita.id_paciente}`);
+            const pacienteResponse = await fetch(`${config.API_URL}/pacientes/${cita.id_paciente}`); // Utiliza la URL centralizada
             if (!pacienteResponse.ok) {
               throw new Error('Error al obtener datos del paciente');
             }
@@ -55,13 +65,13 @@ const EventScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Citas Pendientes</Text>
+      <Text style={styles.heading}>Citas para el {selectedDate}</Text>
       <FlatList
         data={citas}
         renderItem={renderCitaItem}
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={{ flexGrow: 1 }}
-        ListEmptyComponent={<Text style={styles.emptyText}>No hay citas pendientes</Text>}
+        ListEmptyComponent={<Text style={styles.emptyText}>No hay citas para esta fecha</Text>}
       />
     </View>
   );
@@ -70,29 +80,29 @@ const EventScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0E21',
+    backgroundColor: '#F5F5F5', // Light background
     padding: 20,
   },
   heading: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#000', // Black text for light mode
     marginBottom: 20,
     textAlign: 'center',
   },
   citaItem: {
-    backgroundColor: '#1C1C3C',
+    backgroundColor: '#E0E0E0', // Light item background
     borderRadius: 10,
     padding: 15,
     marginBottom: 15,
   },
   citaText: {
-    color: '#fff',
+    color: '#000', // Black text for light mode
     fontSize: 16,
     marginBottom: 5,
   },
   emptyText: {
-    color: '#fff',
+    color: '#000', // Black text for empty state
     fontSize: 16,
     textAlign: 'center',
   },
