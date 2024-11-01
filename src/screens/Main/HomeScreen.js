@@ -11,9 +11,10 @@ const HomeScreen = ({ navigation }) => {
   const { medico } = useContext(UserContext);
   const [citasPendientes, setCitasPendientes] = useState({});
 
-  const getCitasPendientes = async (medicoId) => {
+  const getCitasPendientes = async (id_medico) => {
     try {
-      const response = await fetch(`${config.API_URL}/citas?medicoId=${medicoId}`);
+      const response = await fetch(`${config.API_URL}/citas/medico/${id_medico
+      }`);
       if (!response.ok) throw new Error('Error de red');
       const citasData = await response.json();
 

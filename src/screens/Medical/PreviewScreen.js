@@ -4,8 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import config from '../../config/config'; // Asegúrate de que esta ruta sea correcta
 
 const PreviewScreen = ({ route, navigation }) => {
-    const { formData } = route.params;
-
+    const { formData, id_cita } = route.params;
     const handleSaveData = async () => {
         try {
             const response = await fetch(`${config.API_URL}/encuestas/crearencuesta`, {
@@ -14,7 +13,7 @@ const PreviewScreen = ({ route, navigation }) => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    cita_id: 1,
+                    cita_id: id_cita, // Asegúrate de que esto esté aquí
                     motivo_consulta: formData.motivo_consulta || null,
                     tratamiento_previo: formData.tratamiento_previo || null,
                     medicamentos_actuales: formData.medicamentos_actuales || null,
@@ -40,7 +39,7 @@ const PreviewScreen = ({ route, navigation }) => {
             }
     
             // Ahora generamos el PDF después de guardar la encuesta
-            const pdfResponse = await fetch(`${config.API_URL}/encuestas/generate-pdf/1`, {
+            const pdfResponse = await fetch(`${config.API_URL}/encuestas/generate-pdf/${id_cita}`, { // Usando id_cita
                 method: 'POST',
             });
     
@@ -56,7 +55,7 @@ const PreviewScreen = ({ route, navigation }) => {
                 },
             ]);
         } catch (error) {
-            console.error('Error al guardar los datos o generar el PDF:', error);
+            console.error(`Error al guardar los datos o generar el PDF (ID Cita: ${id_cita}):`, error); // Agregando el id_cita al log
             Alert.alert('Error', error.message);
         }
     };    

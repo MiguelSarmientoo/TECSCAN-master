@@ -3,7 +3,10 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView 
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Picker } from '@react-native-picker/picker';
 
-const NewReportScreen = ({ navigation }) => {
+const NewReportScreen = ({ navigation, route }) => {
+  const { id_cita, paciente } = route.params;
+
+  // Estado del formulario
   const [formData, setFormData] = useState({
     motivo_consulta: '',
     tratamiento_previo: '',
@@ -34,7 +37,8 @@ const NewReportScreen = ({ navigation }) => {
   const handleSubmit = () => {
     try {
       console.log('Datos del formulario:', formData);
-      navigation.navigate('Preview', { formData });
+      // Navega a PreviewScreen con los datos
+      navigation.navigate('Preview', { formData, id_cita });
     } catch (error) {
       console.error('Error al procesar el formulario:', error);
       Alert.alert('Error', 'No se pudo procesar el formulario');
