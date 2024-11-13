@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { View, TextInput, StyleSheet, Text, TouchableOpacity, Animated, Keyboard, ScrollView, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -12,8 +12,25 @@ export default function LoginScreen({ navigation }) {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [fadeAnim] = useState(new Animated.Value(0));
+  const [keyboardVisible, setKeyboardVisible] = useState(false); // Nuevo estado para controlar la visibilidad de las animaciones
   const { setMedico } = useContext(UserContext);
   const { width, height } = Dimensions.get('window');
+
+  // Efecto para escuchar los eventos del teclado
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    // Limpiar los listeners cuando el componente se desmonte
+    return () => {
+      keyboardDidHideListener.remove();
+      keyboardDidShowListener.remove();
+    };
+  }, []);
 
   const handleLogin = async () => {
     Keyboard.dismiss();
@@ -58,20 +75,24 @@ export default function LoginScreen({ navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.mainContainer}>
-        {/* Animaciones colocadas al mismo nivel que el contenido */}
-        <LottieView
-          source={require('../../../assets/upper.json')}
-          autoPlay
-          loop
-          style={styles.upperAnimation}
-        />
-        <LottieView
-          source={require('../../../assets/down.json')}
-          autoPlay
-          loop
-          style={styles.lowerAnimation}
-        />
-  
+        {/* Animaciones que desaparecen cuando el teclado está visible */}
+        {!keyboardVisible && (
+          <>
+            <LottieView
+              source={require('../../../assets/upper.json')}
+              autoPlay
+              loop
+              style={styles.upperAnimation}
+            />
+            <LottieView
+              source={require('../../../assets/down.json')}
+              autoPlay
+              loop
+              style={styles.lowerAnimation}
+            />
+          </>
+        )}
+
         {/* Contenido principal */}
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
@@ -88,7 +109,7 @@ export default function LoginScreen({ navigation }) {
             </View>
             <Text style={styles.title}>Welcome Back!</Text>
             <Text style={styles.subtitle}>Please sign in to your account</Text>
-  
+
             <View style={styles.inputGroup}>
               <View style={styles.inputContainer}>
                 <Icon name="email-outline" size={22} color="#21cecc" style={styles.icon} />
@@ -102,7 +123,7 @@ export default function LoginScreen({ navigation }) {
                   placeholderTextColor="#b1becc"
                 />
               </View>
-  
+
               <View style={styles.inputContainer}>
                 <Icon name="lock-outline" size={22} color="#21cecc" style={styles.icon} />
                 <TextInput
@@ -123,11 +144,11 @@ export default function LoginScreen({ navigation }) {
                 </TouchableOpacity>
               </View>
             </View>
-  
+
             <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
               <Text style={styles.loginButtonText}>Sign In</Text>
             </TouchableOpacity>
-  
+
             {errorMessage ? (
               <Animated.View style={[styles.errorContainer, { opacity: fadeAnim }]}>
                 <Text style={styles.errorText}>{errorMessage}</Text>
@@ -137,7 +158,7 @@ export default function LoginScreen({ navigation }) {
         </ScrollView>
       </View>
     </KeyboardAvoidingView>
-  );  
+  );
 }
 
 const styles = StyleSheet.create({
@@ -183,7 +204,8 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 0,
+    marginTop: 30,
   },
   logo: {
     width: 150,

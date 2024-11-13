@@ -13,7 +13,7 @@ const PreviewScreen = ({ route, navigation }) => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    cita_id: id_cita, // Asegúrate de que esto esté aquí
+                    cita_id: id_cita, 
                     motivo_consulta: formData.motivo_consulta || null,
                     tratamiento_previo: formData.tratamiento_previo || null,
                     medicamentos_actuales: formData.medicamentos_actuales || null,
