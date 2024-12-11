@@ -167,10 +167,6 @@ export default function LoginScreen({ navigation }) {
                 <Text style={styles.loginButtonText}>Sign In</Text>
               )}
             </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')} style={styles.forgotPassword}>
-              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-            </TouchableOpacity>
           </View>
         </ScrollView>
       </View>
@@ -266,7 +262,7 @@ const styles = StyleSheet.create({
   },
   inputGroup: {
     width: '100%',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -278,7 +274,7 @@ const styles = StyleSheet.create({
     elevation: 2,
     marginBottom: 15,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
   },
@@ -303,13 +299,4 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: 'bold',
   },
-  forgotPassword: {
-    marginTop: 10,
-  },
-  forgotPasswordText: {
-    color: '#21cecc',
-    fontSize: 16,
-    fontWeight: '500',
-  },
 });
-
