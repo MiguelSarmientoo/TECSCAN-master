@@ -12,11 +12,12 @@ export default function LoginScreen({ navigation }) {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [fadeAnim] = useState(new Animated.Value(0));
-  const [keyboardVisible, setKeyboardVisible] = useState(false); // Nuevo estado para controlar la visibilidad de las animaciones
+  const [loading, setLoading] = useState(false);
+  const [notificationVisible, setNotificationVisible] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const { setMedico } = useContext(UserContext);
   const { width, height } = Dimensions.get('window');
 
-  // Efecto para escuchar los eventos del teclado
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
       setKeyboardVisible(true);
@@ -25,7 +26,6 @@ export default function LoginScreen({ navigation }) {
       setKeyboardVisible(false);
     });
 
-    // Limpiar los listeners cuando el componente se desmonte
     return () => {
       keyboardDidHideListener.remove();
       keyboardDidShowListener.remove();
@@ -33,11 +33,12 @@ export default function LoginScreen({ navigation }) {
   }, []);
 
   const handleLogin = async () => {
-    Keyboard.dismiss();
     if (!email || !password) {
-      showErrorMessage('Please enter your email and password.');
+      showErrorMessage('Please enter both email and password.');
       return;
     }
+
+    setLoading(true);
 
     try {
       const response = await axios.post(`${config.API_URL}/medicos/login`, { email, password });
@@ -49,11 +50,14 @@ export default function LoginScreen({ navigation }) {
       }
     } catch (error) {
       showErrorMessage('Error. Please, check the email and password and try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const showErrorMessage = (message) => {
     setErrorMessage(message);
+    setNotificationVisible(true);
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 300,
@@ -65,9 +69,12 @@ export default function LoginScreen({ navigation }) {
           duration: 300,
           useNativeDriver: true,
         }).start(() => setErrorMessage(''));
+        setNotificationVisible(false);
       }, 4000);
     });
   };
+
+  const isFormValid = email && password;
 
   return (
     <KeyboardAvoidingView
@@ -75,25 +82,29 @@ export default function LoginScreen({ navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.mainContainer}>
-        {/* Animaciones que desaparecen cuando el teclado está visible */}
+        <LottieView
+          source={require('../../../assets/upper.json')}
+          autoPlay
+          loop
+          style={styles.upperAnimation}
+        />
+
         {!keyboardVisible && (
-          <>
-            <LottieView
-              source={require('../../../assets/upper.json')}
-              autoPlay
-              loop
-              style={styles.upperAnimation}
-            />
-            <LottieView
-              source={require('../../../assets/down.json')}
-              autoPlay
-              loop
-              style={styles.lowerAnimation}
-            />
-          </>
+          <LottieView
+            source={require('../../../assets/down.json')}
+            autoPlay
+            loop
+            style={styles.lowerAnimation}
+          />
         )}
 
-        {/* Contenido principal */}
+        {notificationVisible && (
+          <Animated.View style={[styles.notification, { opacity: fadeAnim }]}>
+            <Icon name="alert-circle" size={22} color="#fff" style={styles.notificationIcon} />
+            <Text style={styles.notificationText}>{errorMessage}</Text>
+          </Animated.View>
+        )}
+
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled"
@@ -145,15 +156,21 @@ export default function LoginScreen({ navigation }) {
               </View>
             </View>
 
-            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-              <Text style={styles.loginButtonText}>Sign In</Text>
+            <TouchableOpacity
+              style={[styles.loginButton, { opacity: isFormValid ? 1 : 0.6 }]}
+              onPress={handleLogin}
+              disabled={!isFormValid}
+            >
+              {loading ? (
+                <Icon name="loading" size={24} color="#fff" />
+              ) : (
+                <Text style={styles.loginButtonText}>Sign In</Text>
+              )}
             </TouchableOpacity>
 
-            {errorMessage ? (
-              <Animated.View style={[styles.errorContainer, { opacity: fadeAnim }]}>
-                <Text style={styles.errorText}>{errorMessage}</Text>
-              </Animated.View>
-            ) : null}
+            <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')} style={styles.forgotPassword}>
+              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </View>
@@ -164,7 +181,7 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F9F9F9',
   },
   mainContainer: {
     flex: 1,
@@ -177,7 +194,7 @@ const styles = StyleSheet.create({
     left: -90,
     width: 700,
     height: 280,
-    zIndex: -1, // Colocado detrás del contenido
+    zIndex: -1,
   },
   lowerAnimation: {
     position: 'absolute',
@@ -186,7 +203,32 @@ const styles = StyleSheet.create({
     right: 100,
     width: 700,
     height: 250,
-    zIndex: -1, // Colocado detrás del contenido
+    zIndex: -1,
+  },
+  notification: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(255, 71, 71, 0.9)',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderBottomWidth: 2,
+    borderBottomColor: '#F1F1F1',
+    zIndex: 1,
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    height: 70,
+  },
+  notificationIcon: {
+    marginRight: 10,
+  },
+  notificationText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '500',
+    flex: 1,
   },
   scrollContainer: {
     flexGrow: 1,
@@ -201,79 +243,73 @@ const styles = StyleSheet.create({
     zIndex: 2,
     width: '100%',
     paddingBottom: 90,
+    paddingTop: 20,
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 0,
-    marginTop: 30,
+    marginBottom: -20,
   },
   logo: {
     width: 150,
     height: 150,
   },
   title: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: 'bold',
-    color: '#061527',
+    color: '#2D2D2D',
     marginBottom: 5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#576271',
+    color: '#757575',
     marginBottom: 24,
   },
   inputGroup: {
-    width: '110%',
+    width: '100%',
     marginBottom: 20,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E6E8EB',
+    backgroundColor: '#FFFFFF',
     borderRadius: 10,
     paddingVertical: 12,
-    paddingHorizontal: 8,
-    marginBottom: 15,
+    paddingHorizontal: 16,
     elevation: 2,
-    width: '100%',
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   icon: {
-    marginRight: 5,
+    marginRight: 10,
   },
   input: {
     flex: 1,
-    color: '#061527',
+    color: '#2D2D2D',
     fontSize: 16,
   },
   loginButton: {
-    backgroundColor: '#24A8AF',
-    paddingVertical: 17,
+    backgroundColor: '#21cecc',
     borderRadius: 10,
-    width: '110%',
+    paddingVertical: 15,
     alignItems: 'center',
-    elevation: 5,
+    width: '100%',
+    marginBottom: 10,
   },
   loginButtonText: {
-    color: '#FFFFFF',
     fontSize: 18,
-    fontWeight: '600',
-  },
-  errorContainer: {
-    position: 'absolute', 
-    bottom: 100, 
-    backgroundColor: '#FF6B6B',
-    padding: 14,
-    borderRadius: 8,
-    width: '90%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 10,
-    elevation: 4,
-  },
-  errorText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  forgotPassword: {
+    marginTop: 10,
+  },
+  forgotPasswordText: {
+    color: '#21cecc',
+    fontSize: 16,
     fontWeight: '500',
-    textAlign: 'center',
   },
 });
+

@@ -22,7 +22,7 @@ const Navbar = ({ onHomePress, onScanQRPress, onProfilePress, isHomeSelected, is
           onPress={onProfilePress}
         >
           <Icon name="account" size={30} color={isProfileSelected ? "#24A8AF" : "#576271"} />
-          <Text style={[styles.navButtonText, isProfileSelected && styles.selectedText]}>Profile</Text>
+          <Text style={[styles.navButtonText, isProfileSelected && styles.selectedText]}>Perfil</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
